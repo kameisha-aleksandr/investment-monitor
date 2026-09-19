@@ -1,38 +1,13 @@
-import time
-
-from market import MarketClient
-from alert import PriceAlert
-from config import ASSETS
-from logger import get_logger
+from config import ASSETS, MONITORING_INTERVAL
+from monitoring import MonitoringService
+from scheduler import Scheduler
 
 
-logger = get_logger(__name__)
+service = MonitoringService(ASSETS)
 
+scheduler = Scheduler(
+    task=service.check_assets,
+    interval=MONITORING_INTERVAL
+)
 
-client = MarketClient()
-
-
-for asset in ASSETS:
-    symbol = asset["symbol"]
-    condition = asset["condition"]
-    value = asset["value"]
-
-    logger.info(
-        f"Checking {symbol}: {condition} {value}"
-    )
-
-    price = client.get_price(symbol)
-
-    alert = PriceAlert(symbol, condition, value)
-
-    if alert.check(price):
-        logger.warning(
-            f"ALERT: {symbol} price is ${price} "
-            f"({condition} {value})"
-        )
-    else:
-        logger.info(
-            f"OK: {symbol} price is ${price} "
-            f"({condition} {value})"
-        )
-    time.sleep(1.5)
+scheduler.start()

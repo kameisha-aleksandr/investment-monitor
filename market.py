@@ -1,6 +1,6 @@
 import requests
 
-from config import API_KEY
+from config import FINNHUB_API_KEY
 from logger import get_logger
 
 
@@ -12,12 +12,11 @@ class MarketClient:
     def get_price(self, symbol):
         logger.info(f"Getting price for {symbol}")
 
-        url = "https://www.alphavantage.co/query"
+        url = "https://finnhub.io/api/v1/quote"
 
         params = {
-            "function": "GLOBAL_QUOTE",
             "symbol": symbol,
-            "apikey": API_KEY
+            "token": FINNHUB_API_KEY
         }
 
         try:
@@ -27,7 +26,7 @@ class MarketClient:
 
             data = response.json()
 
-            price = float(data["Global Quote"]["05. price"])
+            price = float(data["c"])
 
             logger.info(f"{symbol} price: ${price}")
 
