@@ -1,3 +1,4 @@
+from notification import NotificationService
 from market import MarketClient
 from alert import PriceAlert
 from logger import get_logger
@@ -11,6 +12,7 @@ class MonitoringService:
     def __init__(self, assets):
         self.assets = assets
         self.market_client = MarketClient()
+        self.notification_service = NotificationService()
         self.alerts = {}
 
         self._create_alerts()
@@ -46,10 +48,23 @@ class MonitoringService:
                         f"ALERT STARTED: {symbol} "
                         f"price is ${price}"
                     )
+
+                    self.notification_service.send_alert(
+                        symbol=symbol,
+                        price=price,
+                        condition=asset["condition"],
+                        value=asset["value"]
+                    )
+
                 else:
                     logger.info(
                         f"ALERT CLEARED: {symbol} "
                         f"price is ${price}"
+                    )
+
+                    self.notification_service.send_alert_cleared(
+                        symbol=symbol,
+                        price=price
                     )
 
             else:
