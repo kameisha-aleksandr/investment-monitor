@@ -1,7 +1,8 @@
-from notification import NotificationService
 from market import MarketClient
 from alert import PriceAlert
 from logger import get_logger
+from notification import NotificationService
+from database import Database
 
 
 logger = get_logger(__name__)
@@ -13,6 +14,7 @@ class MonitoringService:
         self.assets = assets
         self.market_client = MarketClient()
         self.notification_service = NotificationService()
+        self.database = Database()
         self.alerts = {}
 
         self._create_alerts()
@@ -38,11 +40,17 @@ class MonitoringService:
 
             price = self.market_client.get_price(symbol)
 
+            self.database.save_price(
+                symbol=symbol,
+                price=price
+            )
+
             alert = self.alerts[symbol]
 
             is_triggered, state_changed = alert.update(price)
 
             if state_changed:
+
                 if is_triggered:
                     logger.warning(
                         f"ALERT STARTED: {symbol} "
@@ -56,6 +64,14 @@ class MonitoringService:
                         value=asset["value"]
                     )
 
+                    self.database.save_alert(
+                        symbol=symbol,
+                        price=price,
+                        condition=asset["condition"],
+                        threshold=asset["value"],
+                        event="STARTED"
+                    )
+
                 else:
                     logger.info(
                         f"ALERT CLEARED: {symbol} "
@@ -67,7 +83,10 @@ class MonitoringService:
                         price=price
                     )
 
-            else:
-                logger.info(
-                    f"No state change for {symbol}"
-                )
+                    self.database.save_alert(
+                        symbol=symbol,
+                        price=price,
+                        condition=asset["condition"],
+                        threshold=asset["value"],
+                        event="CLEARED"
+                    )
