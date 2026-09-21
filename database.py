@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 class Database:
 
-    def __init__(self, database_name="monitoring.db"):
+    def __init__(self, database_name="data/monitoring.db"):
         self.database_name = database_name
         self._create_tables()
 

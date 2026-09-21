@@ -1,0 +1,30 @@
+services:
+
+  monitor:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - investment-monitor-data:/app/data
+    command: python main.py
+    restart: unless-stopped
+
+  api:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - investment-monitor-data:/app/data
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  investment-monitor-data:
