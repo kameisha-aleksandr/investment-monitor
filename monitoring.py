@@ -3,6 +3,7 @@ from alert import PriceAlert
 from logger import get_logger
 from notification import NotificationService
 from database import Database
+from metrics import ASSET_CHECKS, ALERTS_STARTED, ALERTS_CLEARED
 
 
 logger = get_logger(__name__)
@@ -40,6 +41,8 @@ class MonitoringService:
 
             price = self.market_client.get_price(symbol)
 
+            ASSET_CHECKS.inc()
+
             self.database.save_price(
                 symbol=symbol,
                 price=price
@@ -52,6 +55,7 @@ class MonitoringService:
             if state_changed:
 
                 if is_triggered:
+                    ALERTS_STARTED.inc()
                     logger.warning(
                         f"ALERT STARTED: {symbol} "
                         f"price is ${price}"
@@ -73,6 +77,7 @@ class MonitoringService:
                     )
 
                 else:
+                    ALERTS_CLEARED.inc()
                     logger.info(
                         f"ALERT CLEARED: {symbol} "
                         f"price is ${price}"

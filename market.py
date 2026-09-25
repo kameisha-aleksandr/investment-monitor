@@ -2,7 +2,7 @@ import requests
 
 from config import FINNHUB_API_KEY
 from logger import get_logger
-
+from metrics import MARKET_API_ERRORS
 
 logger = get_logger(__name__)
 
@@ -33,6 +33,7 @@ class MarketClient:
             return price
 
         except requests.RequestException as error:
+            MARKET_API_ERRORS.inc()
             logger.error(
                 f"Failed to get price for {symbol}: {error}"
             )

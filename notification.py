@@ -2,7 +2,7 @@ import requests
 
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 from logger import get_logger
-
+from metrics import TELEGRAM_NOTIFICATIONS
 
 logger = get_logger(__name__)
 
@@ -28,6 +28,8 @@ class NotificationService:
             )
 
             response.raise_for_status()
+
+            TELEGRAM_NOTIFICATIONS.inc()
 
             logger.info("Telegram notification sent")
 
